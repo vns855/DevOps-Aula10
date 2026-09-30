@@ -1,0 +1,46 @@
+services:
+  # Serviço 1: Banco de Dados
+  db:
+    image: postgres:15-alpine
+    container_name: meu_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: senha_super_secreta
+      POSTGRES_DB: banco_teste
+    volumes:
+      - pg_dados:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d banco_teste" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Serviço 2: Aplicação Node.js
+  app:
+    build: .
+    container_name: minha_api_node
+    restart: on-failure
+    ports:
+      - "8016:8016"
+    environment:
+      DB_HOST: db
+      DB_USER: admin
+      DB_PASSWORD: senha_super_secreta
+      DB_NAME: banco_teste
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+# Volume para persistência
+volumes:
+  pg_dados:
+
+    # Rede isolada
+networks:
+  app-network:
+    driver: bridge
