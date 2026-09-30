@@ -2,7 +2,7 @@ services:
   # Serviço 1: Banco de Dados
   db:
     image: postgres:15-alpine
-    container_name: vinicius
+    container_name: vinicius_bd
     restart: always
     environment:
       POSTGRES_USER: admin
@@ -21,7 +21,7 @@ services:
   # Serviço 2: Aplicação Node.js
   app:
     build: .
-    container_name: vinicius
+    container_name: vinicius_node
     restart: on-failure
     ports:
       - "8016:8016"
