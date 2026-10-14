@@ -2,7 +2,7 @@ services:
   # Serviço 1: Banco de Dados
   db:
     image: postgres:15-alpine
-    container_name: vinicius_bd
+    container_name: meu_postgres_vinicius
     restart: always
     environment:
       POSTGRES_USER: admin
@@ -12,35 +12,29 @@ services:
       - pg_dados:/var/lib/postgresql/data
     networks:
       - app-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin -d banco_teste" ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   # Serviço 2: Aplicação Node.js
   app:
     build: .
-    container_name: vinicius_node
-    restart: on-failure
+    container_name: minha_api_node_vinicius
+    restart: on-failure # Reinicia se falhar (ex: se o banco ainda estiver subindo)
     ports:
-      - "8016:8016"
+      - "8016:8080"
     environment:
-      DB_HOST: db
+      DB_HOST: db # Nome do serviço do banco na rede do Compose
       DB_USER: admin
       DB_PASSWORD: senha_super_secreta
       DB_NAME: banco_teste
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
       - app-network
 
-# Volume para persistência
+# Definição do Volume para persistência
 volumes:
   pg_dados:
 
-    # Rede isolada
+# Definição da Rede isolada
 networks:
   app-network:
     driver: bridge

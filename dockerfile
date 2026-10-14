@@ -8,6 +8,6 @@ RUN npm install
 # Copia o restante do código
 COPY . .
 # Expõe a porta que a aplicação vai usar
-EXPOSE 8016
+EXPOSE 8080
 # Comando para iniciar a aplicação
 CMD ["node", "server.js"]
