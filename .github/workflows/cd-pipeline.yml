@@ -3,7 +3,7 @@ name: Pipeline de CD - GHCR & Deploy via Docker Compose
 on:
   push:
     branches: [ "main" ]
-    tags: [ 'v*.*.*' ] # Dispara na criação de tags de versão (ex: v1.0.0)
+    tags: [ 'v*.*.*' ] # Dispara na criação de tags semânticas (ex: v1.0.0)
 
 permissions:
   contents: read
@@ -11,7 +11,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/minha-api-node
+  IMAGE_NAME: ${{ github.repository_owner }}/minha-api-devops
 
 jobs:
   build-and-publish:
@@ -56,21 +56,17 @@ jobs:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
 
-      - name: Gerar Arquivo de Variáveis (.env) para o Compose
+      - name: Gerar Arquivo .env Dinâmico para o Compose
         run: |
-          # Extrai a hash curta do commit para usar como tag única da imagem
           IMAGE_TAG=${GITHUB_SHA::7}
           echo "REGISTRY_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" > .env
           echo "IMAGE_TAG=${IMAGE_TAG}" >> .env
-          echo "=== Arquivo .env gerado para o deploy ==="
+          echo "=== Configuração do arquivo .env ==="
           cat .env
 
-      - name: Executar Deploy no Ambiente de Homologação
+      - name: Executar Deploy no Ambiente
         run: |
-          echo "=== Efetuando pull da imagem no GHCR e atualizando contêineres ==="
-          # Baixa as imagens atualizadas declaradas no docker-compose.yml
-          docker compose pull
-          # Sobe/atualiza a infraestrutura em background
+          echo "=== Efetuando pull da nova imagem no GHCR ==="
+          docker compose pull app
           docker compose up -d --remove-orphans
-          # Exibe os contêineres em execução
           docker compose ps
